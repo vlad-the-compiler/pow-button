@@ -1,0 +1,5 @@
+#pragma once
+
+#define ANIMATION_STOP 0
+#define ANIMATION_REPEAT 1
+#define ANIMATION_REPEAT_KEYFRAME 2
