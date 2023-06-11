@@ -10,6 +10,11 @@
 #define HAVE_RESET_SW false
 // Whether your front panel has a HDD activity LED separated from the main power indicator
 #define SEPARATE_HDD_LED false
+// Base brightness for your power indicator LED; gets scaled by the on-device brignthess setting
+#define POWER_LED_BASE_BRIGHTNESS 255
+// Base brightness for your HDD activity indicator LED; gets scaled by the on-device brignthess setting
+// Front panels with single buttons that incorporate both power and HDD indicators may require a reduction of this value
+#define HDD_LED_BASE_BRIGHTNESS 16
 
 // Hardware config - Panel side
 #define POWER_LED_PIN 5
@@ -161,11 +166,13 @@ void setup() {
           Serial.print(F("Brightness = "));
           Serial.println(brightness);
         }
+        // Mnemonic for the 2 syllables in "[Smart] [mode]"
         if (clicks == 2) {
           modeToApply = MODE_SMART;
           powerLed.startAnimation(ani_smartMode);
           Serial.println(F("Smart mode"));
         }
+        // Mnemonic for the 3 syllables in "[Pass][through] [mode]"
         if (clicks == 3) {
           modeToApply = MODE_PASSTHROUGH;
           powerLed.startAnimation(ani_passthroughMode);
@@ -184,7 +191,8 @@ void setup() {
               }
             }
           }
-        } else if (clicks == 1) {
+        }
+        if (clicks == 1) {
           Serial.println(F("Issuing Power signal"));
           simulatePanelButton(POWER_SW_OUT_PIN, true);
           delay(SIMULATED_CLICK_DURATION);
@@ -271,10 +279,14 @@ void loop() {
     }
   }
 
+  // Get current brightness levels
+  byte resolvedPowerLedBrightness = (uint16_t)(brightness * POWER_LED_BASE_BRIGHTNESS) >> 8;
+  byte resolvedHddLedBrightness = (uint16_t)(brightness * HDD_LED_BASE_BRIGHTNESS) >> 8;
+
   // Animations + Other animation-synced routines
   if (shouldRunAnimations()) {
     // Animations
-    byte powerLedValue = map(powerLed.runAnimation(), 0, 255, 0, brightness);
+    byte powerLedValue = map(powerLed.runAnimation(), 0, 255, 0, resolvedPowerLedBrightness);
     if (mode == MODE_SMART) {
       analogWrite(POWER_LED_PIN, powerLedValue);
     }
@@ -312,11 +324,11 @@ void loop() {
 
   // Handle LEDs
   if (mode == MODE_PASSTHROUGH) {
-    analogWrite(POWER_LED_PIN, (!digitalRead(POWER_SENSE_PIN)) * brightness);
-    analogWrite(HDD_LED_PIN, (!digitalRead(HDD_SENSE_PIN)) * brightness);
+    analogWrite(POWER_LED_PIN, (!digitalRead(POWER_SENSE_PIN)) * resolvedPowerLedBrightness);
+    analogWrite(HDD_LED_PIN, (!digitalRead(HDD_SENSE_PIN)) * resolvedHddLedBrightness);
   } else {
     if (SEPARATE_HDD_LED) {
-      analogWrite(HDD_LED_PIN, (!digitalRead(HDD_SENSE_PIN)) * brightness);
+      analogWrite(HDD_LED_PIN, (!digitalRead(HDD_SENSE_PIN)) * resolvedHddLedBrightness);
     } else {
       analogWrite(HDD_LED_PIN, 0);
     }

@@ -6,6 +6,7 @@
 #define CLICK_MAX_DURATION 500
 #define MULTI_CLICK_MAX_DELAY 400
 
+// Syntactic sugar for button callback lambdas
 #define buttonCallback(x) [](x) -> void
 
 class SmartButton {

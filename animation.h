@@ -29,8 +29,8 @@ const float ani_standby[] PROGMEM = {
 
 const float ani_working[] PROGMEM = {
   2,
-  64, 1,
-  255, 1,
+  48, 0.75,
+  255, 0.75,
   ANIMATION_REPEAT
 };
 
