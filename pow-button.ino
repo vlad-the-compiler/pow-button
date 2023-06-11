@@ -219,8 +219,7 @@ void loop() {
     if (checkPowerInLow) {
       if (millis() - checkPowerInLowMillis >= POWER_STATE_DECISION_MILLIS) {
         Serial.println(F("Power In Low check delay finished, Power state is Off"));
-        // Enqueue instead of override in order to get a smooth transition from any active HDD Working animation
-        powerLed.enqueueAnimation(ani_off);
+        powerLed.startAnimation(ani_off);
         isOn = false;
         isWorking = false;
         isStandby = false;
